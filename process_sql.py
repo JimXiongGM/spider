@@ -154,6 +154,10 @@ def scan_alias(toks):
     alias = {}
     for idx in as_idxs:
         alias[toks[idx + 1]] = toks[idx - 1]
+    
+    # debug
+    if alias:
+        x=1
     return alias
 
 

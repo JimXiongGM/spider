@@ -1,17 +1,18 @@
 import json
-import os
 import sqlite3
 import sys
 import traceback
-from os import listdir, makedirs
-from os.path import exists, isdir, isfile, join, split, splitext
-
-from nltk import tokenize, word_tokenize
+from os import listdir
+from os.path import exists, join
+from tqdm import tqdm
 
 EXIST = {"atis", "geo", "advising", "yelp", "restaurants", "imdb", "academic"}
 
 
 def convert_fk_index(data):
+    """
+    convert_fk_index 函数将data中的外键转换为新索引。函数遍历外键，找到各自的表名、列名，然后通过遍历column_names_original找到相应的列索引并保存。
+    """
     fk_holder = []
     for fk in data["foreign_keys"]:
         tn, col, ref_tn, ref_col = fk[0][0], fk[0][1], fk[1][0], fk[1][1]
@@ -36,9 +37,14 @@ def convert_fk_index(data):
 
 
 def dump_db_json_schema(db, f):
-    """read table and column info"""
+    """
+    read table and column info
+    dump_db_json_schema 函数连接到SQLite数据库，并读取表的名称、列的信息（包括列名、列类型、主键、外键）等。然后调用convert_fk_index函数来处理外键的索引转换，最终返回一个包含数据库模式信息的字典。
+    不太行 generate_markdown_table 更好
+    """
 
     conn = sqlite3.connect(db)
+    # 开启外键约束，默认是关闭的，开启后，会自动更新
     conn.execute("pragma foreign_keys=ON")
     cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
@@ -60,6 +66,7 @@ def dump_db_json_schema(db, f):
         data["table_names"].append(table_name.lower().replace("_", " "))
         fks = conn.execute("PRAGMA foreign_key_list('{}') ".format(table_name)).fetchall()
         # print("db:{} table:{} fks:{}".format(f,table_name,fks))
+        
         fk_holder.extend([[(table_name, fk[3]), (fk[2], fk[4])] for fk in fks])
         cur = conn.execute("PRAGMA table_info('{}') ".format(table_name))
         for j, col in enumerate(cur.fetchall()):
@@ -97,22 +104,30 @@ def dump_db_json_schema(db, f):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print(
-            "Usage: python get_tables.py [dir includes many subdirs containing database.sqlite files] [output file name e.g. output.json] [existing tables.json file to be inherited]"
-        )
-        sys.exit()
-    input_dir = sys.argv[1]
-    output_file = sys.argv[2]
-    ex_tab_file = sys.argv[3]
+    # python preprocess/get_tables.py
+
+    # if len(sys.argv) < 2:
+    #     print(
+    #         "Usage: python get_tables.py [dir includes many subdirs containing database.sqlite files] [output file name e.g. output.json] [existing tables.json file to be inherited]"
+    #     )
+    #     sys.exit()
+    # input_dir = sys.argv[1]
+    # output_file = sys.argv[2]
+    # ex_tab_file = sys.argv[3]
+
+    # training data
+    input_dir = "data/database"
+    output_file = "tables-processed.json"
+    ex_tab_file = "data/tables.json"
 
     all_fs = [df for df in listdir(input_dir) if exists(join(input_dir, df, df + ".sqlite"))]
     with open(ex_tab_file) as f:
         ex_tabs = json.load(f)
         # for tab in ex_tabs:
         #    tab["foreign_keys"] = convert_fk_index(tab)
-        ex_tabs = {tab["db_id"]: tab for tab in ex_tabs if tab["db_id"] in all_fs}
-        print("precessed file num: ", len(ex_tabs))
+    ex_tabs.sort(key=lambda x: x["db_id"])
+    ex_tabs = {tab["db_id"]: tab for tab in ex_tabs if tab["db_id"] in all_fs}
+    print("precessed file num: ", len(ex_tabs))
     not_fs = [df for df in listdir(input_dir) if not exists(join(input_dir, df, df + ".sqlite"))]
     for d in not_fs:
         print("no sqlite file found in: ", d)
@@ -120,12 +135,13 @@ if __name__ == "__main__":
         (df + ".sqlite", df) for df in listdir(input_dir) if exists(join(input_dir, df, df + ".sqlite"))
     ]
     tables = []
-    for f, df in db_files:
+    db_files.sort()
+    for f, df in tqdm(db_files,desc="db_files"):
         # if df in ex_tabs.keys():
         # print 'reading old db: ', df
         #    tables.append(ex_tabs[df])
         db = join(input_dir, df, f)
-        print("\nreading new db: ", df)
+        # print("\nreading new db: ", df)
         table = dump_db_json_schema(db, df)
         prev_tab_num = len(ex_tabs[df]["table_names"])
         prev_col_num = len(ex_tabs[df]["column_names"])

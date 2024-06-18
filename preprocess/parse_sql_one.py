@@ -1,16 +1,4 @@
 import json
-import os
-import random
-import re
-import sqlite3
-import sys
-import traceback
-from collections import OrderedDict
-from os import listdir, makedirs
-from os.path import exists, isdir, isfile, join, split, splitext
-
-import sqlparse
-from nltk import tokenize, word_tokenize
 
 from process_sql import get_sql
 
@@ -56,7 +44,10 @@ class Schema:
 def get_schemas_from_json(fpath):
     with open(fpath) as f:
         data = json.load(f)
+    data.sort(key=lambda x: x["db_id"])
+    
     db_names = [db["db_id"] for db in data]
+    db_names.sort()
 
     tables = {}
     schemas = {}
@@ -75,13 +66,15 @@ def get_schemas_from_json(fpath):
             schema[table] = cols
         schemas[db_id] = schema
 
+    # schemas: {db: table: [col.lower, ..., ], ...}
+    # tables: {db: {"column_names_original": [(tab_id, col), ...], "table_names_original": [tab, ...]}, ...}
     return schemas, db_names, tables
 
 
 if __name__ == "__main__":
     sql = "SELECT name ,  country ,  age FROM singer ORDER BY age DESC"
     db_id = "concert_singer"
-    table_file = "tables.json"
+    table_file = "tables-processed.json"
 
     schemas, db_names, tables = get_schemas_from_json(table_file)
     schema = schemas[db_id]
