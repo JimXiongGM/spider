@@ -1,21 +1,20 @@
 from __future__ import division
-import copy
 
-import nltk
-from collections import OrderedDict, defaultdict
-import logging
 import collections
-import numpy as np
-import string
+import copy
+import logging
 import re
-import astor
+import string
+from collections import OrderedDict, defaultdict
 from itertools import chain
 
-from nn.utils.io_utils import serialize_to_file, deserialize_from_file
-
+import astor
 import config
+import nltk
+import numpy as np
 from lang.py.parse import get_grammar
-from lang.py.unaryclosure import get_top_unary_closures, apply_unary_closures
+from lang.py.unaryclosure import apply_unary_closures, get_top_unary_closures
+from nn.utils.io_utils import deserialize_from_file, serialize_to_file
 
 # define actions
 APPLY_RULE = 0
@@ -675,8 +674,11 @@ def canonicalize_query(query):
 
 
 def canonicalize_example(query, code):
-    from lang.py.parse import parse_raw, parse_tree_to_python_ast, canonicalize_code as make_it_compilable
-    import astor, ast
+    import ast
+
+    import astor
+    from lang.py.parse import canonicalize_code as make_it_compilable
+    from lang.py.parse import parse_raw, parse_tree_to_python_ast
 
     canonical_query, str_map = canonicalize_query(query)
     canonical_code = code
@@ -701,8 +703,8 @@ def canonicalize_example(query, code):
 
 
 def process_query(query, code):
-    from parse import code_to_ast, ast_to_tree, tree_to_ast, parse
     import astor
+    from parse import ast_to_tree, code_to_ast, parse, tree_to_ast
     str_count = 0
     str_map = dict()
 

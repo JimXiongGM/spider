@@ -1,23 +1,23 @@
-import numpy as np
-import cProfile
-import ast
-import traceback
 import argparse
-import os
+import ast
+import cProfile
 import logging
-from vprof import profiler
+import os
+import traceback
 
-from model import Model
-from dataset import DataEntry, DataSet, Vocab, Action
 import config
-from learner import Learner
-from evaluation import *
-from decoder import decode_python_dataset, decode_sql_dataset
-from components import Hyp
+import numpy as np
 from astnode import ASTNode
-
+from components import Hyp
+from dataset import Action, DataEntry, DataSet, Vocab
+from decoder import decode_python_dataset, decode_sql_dataset
+from learner import Learner
+from model import Model
 from nn.utils.generic_utils import init_logging
 from nn.utils.io_utils import deserialize_from_file, serialize_to_file
+from vprof import profiler
+
+from evaluation import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-data')
@@ -214,8 +214,9 @@ if __name__ == '__main__':
             analyze_decode_results(dataset, decode_results)
 
     if args.operation == 'interactive':
-        from dataset import canonicalize_query, query_to_data
         from collections import namedtuple
+
+        from dataset import canonicalize_query, query_to_data
         from lang.py.parse import decode_tree_to_python_ast
         assert model is not None
 

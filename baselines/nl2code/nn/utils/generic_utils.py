@@ -1,16 +1,18 @@
 from __future__ import absolute_import
-import numpy as np
-import time
-import sys
-import six
+
 import logging
+import sys
+import time
+
+import numpy as np
+import six
 
 
 def get_from_module(identifier, module_params, module_name, instantiate=False, kwargs=None):
     if isinstance(identifier, six.string_types):
         res = module_params.get(identifier)
         if not res:
-            raise Exception('Invalid ' + str(module_name) + ': ' + str(identifier))
+            raise Exception("Invalid " + str(module_name) + ": " + str(identifier))
         if instantiate and not kwargs:
             return res()
         elif instantiate and kwargs:
@@ -24,48 +26,50 @@ def make_tuple(*args):
     return args
 
 
-def printv(v, prefix=''):
+def printv(v, prefix=""):
     if type(v) == dict:
-        if 'name' in v:
-            print(prefix + '#' + v['name'])
-            del v['name']
-        prefix += '...'
+        if "name" in v:
+            print(prefix + "#" + v["name"])
+            del v["name"]
+        prefix += "..."
         for nk, nv in v.items():
             if type(nv) in [dict, list]:
-                print(prefix + nk + ':')
+                print(prefix + nk + ":")
                 printv(nv, prefix)
             else:
-                print(prefix + nk + ':' + str(nv))
+                print(prefix + nk + ":" + str(nv))
     elif type(v) == list:
-        prefix += '...'
+        prefix += "..."
         for i, nv in enumerate(v):
-            print(prefix + '#' + str(i))
+            print(prefix + "#" + str(i))
             printv(nv, prefix)
     else:
-        prefix += '...'
+        prefix += "..."
         print(prefix + str(v))
 
 
 def make_batches(size, batch_size):
-    nb_batch = int(np.ceil(size/float(batch_size)))
-    return [(i*batch_size, min(size, (i+1)*batch_size)) for i in range(0, nb_batch)]
+    nb_batch = int(np.ceil(size / float(batch_size)))
+    return [(i * batch_size, min(size, (i + 1) * batch_size)) for i in range(0, nb_batch)]
 
 
 def slice_X(X, start=None, stop=None):
     if type(X) == list:
-        if hasattr(start, '__len__'):
+        if hasattr(start, "__len__"):
             return [x[start] for x in X]
         else:
             return [x[start:stop] for x in X]
     else:
-        if hasattr(start, '__len__'):
+        if hasattr(start, "__len__"):
             return X[start]
         else:
             return X[start:stop]
 
 
 def init_logging(file_name, level=logging.INFO):
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s', datefmt='%m/%d/%Y %H:%M:%S')
+    formatter = logging.Formatter(
+        "%(asctime)s [%(levelname)s] %(module)s: %(message)s", datefmt="%m/%d/%Y %H:%M:%S"
+    )
     fh = logging.FileHandler(file_name)
     ch = logging.StreamHandler()
 
@@ -77,12 +81,11 @@ def init_logging(file_name, level=logging.INFO):
     logging.getLogger().addHandler(fh)
     logging.getLogger().setLevel(level)
 
-    logging.info('init logging file [%s]' % file_name)
+    logging.info("init logging file [%s]" % file_name)
 
 
-def pad_sequences(sequences, maxlen=None, dtype='int32',
-                  padding='pre', truncating='pre', value=0.):
-    '''Pads each sequence to the same length:
+def pad_sequences(sequences, maxlen=None, dtype="int32", padding="pre", truncating="pre", value=0.0):
+    """Pads each sequence to the same length:
     the length of the longest sequence.
 
     If maxlen is provided, any sequence longer
@@ -103,7 +106,7 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
 
     # Returns
         x: numpy array with dimensions (number_of_sequences, maxlen)
-    '''
+    """
     lengths = [len(s) for s in sequences]
 
     nb_samples = len(sequences)
@@ -122,9 +125,9 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
     for idx, s in enumerate(sequences):
         if len(s) == 0:
             continue  # empty list was found
-        if truncating == 'pre':
+        if truncating == "pre":
             trunc = s[-maxlen:]
-        elif truncating == 'post':
+        elif truncating == "post":
             trunc = s[:maxlen]
         else:
             raise ValueError('Truncating type "%s" not understood' % truncating)
@@ -132,13 +135,15 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
         # check `trunc` has expected shape
         trunc = np.asarray(trunc, dtype=dtype)
         if trunc.shape[1:] != sample_shape:
-            raise ValueError('Shape of sample %s of sequence at position %s is different from expected shape %s' %
-                             (trunc.shape[1:], idx, sample_shape))
+            raise ValueError(
+                "Shape of sample %s of sequence at position %s is different from expected shape %s"
+                % (trunc.shape[1:], idx, sample_shape)
+            )
 
-        if padding == 'post':
-            x[idx, :len(trunc)] = trunc
-        elif padding == 'pre':
-            x[idx, -len(trunc):] = trunc
+        if padding == "post":
+            x[idx, : len(trunc)] = trunc
+        elif padding == "pre":
+            x[idx, -len(trunc) :] = trunc
         else:
             raise ValueError('Padding type "%s" not understood' % padding)
     return x
@@ -146,9 +151,9 @@ def pad_sequences(sequences, maxlen=None, dtype='int32',
 
 class Progbar(object):
     def __init__(self, target, width=30, verbose=1):
-        '''
-            @param target: total number of steps expected
-        '''
+        """
+        @param target: total number of steps expected
+        """
         self.width = width
         self.target = target
         self.sum_values = {}
@@ -159,18 +164,18 @@ class Progbar(object):
         self.verbose = verbose
 
     def update(self, current, values=[]):
-        '''
-            @param current: index of current step
-            @param values: list of tuples (name, value_for_last_step).
-            The progress bar will display averages for these values.
-        '''
+        """
+        @param current: index of current step
+        @param values: list of tuples (name, value_for_last_step).
+        The progress bar will display averages for these values.
+        """
         for k, v in values:
             if k not in self.sum_values:
                 self.sum_values[k] = [v * (current - self.seen_so_far), current - self.seen_so_far]
                 self.unique_values.append(k)
             else:
                 self.sum_values[k][0] += v * (current - self.seen_so_far)
-                self.sum_values[k][1] += (current - self.seen_so_far)
+                self.sum_values[k][1] += current - self.seen_so_far
         self.seen_so_far = current
 
         now = time.time()
@@ -180,18 +185,18 @@ class Progbar(object):
             sys.stdout.write("\r")
 
             numdigits = int(np.floor(np.log10(self.target))) + 1
-            barstr = '%%%dd/%%%dd [' % (numdigits, numdigits)
+            barstr = "%%%dd/%%%dd [" % (numdigits, numdigits)
             bar = barstr % (current, self.target)
-            prog = float(current)/self.target
-            prog_width = int(self.width*prog)
+            prog = float(current) / self.target
+            prog_width = int(self.width * prog)
             if prog_width > 0:
-                bar += ('='*(prog_width-1))
+                bar += "=" * (prog_width - 1)
                 if current < self.target:
-                    bar += '>'
+                    bar += ">"
                 else:
-                    bar += '='
-            bar += ('.'*(self.width-prog_width))
-            bar += ']'
+                    bar += "="
+            bar += "." * (self.width - prog_width)
+            bar += "]"
             sys.stdout.write(bar)
             self.total_width = len(bar)
 
@@ -199,18 +204,18 @@ class Progbar(object):
                 time_per_unit = (now - self.start) / current
             else:
                 time_per_unit = 0
-            eta = time_per_unit*(self.target - current)
-            info = ''
+            eta = time_per_unit * (self.target - current)
+            info = ""
             if current < self.target:
-                info += ' - ETA: %ds' % eta
+                info += " - ETA: %ds" % eta
             else:
-                info += ' - %ds' % (now - self.start)
+                info += " - %ds" % (now - self.start)
             for k in self.unique_values:
-                info += ' - %s: %.4f' % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
+                info += " - %s: %.4f" % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
 
             self.total_width += len(info)
             if prev_total_width > self.total_width:
-                info += ((prev_total_width-self.total_width) * " ")
+                info += (prev_total_width - self.total_width) * " "
 
             sys.stdout.write(info)
             sys.stdout.flush()
@@ -220,12 +225,10 @@ class Progbar(object):
 
         if self.verbose == 2:
             if current >= self.target:
-                info = '%ds' % (now - self.start)
+                info = "%ds" % (now - self.start)
                 for k in self.unique_values:
-                    info += ' - %s: %.4f' % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
+                    info += " - %s: %.4f" % (k, self.sum_values[k][0] / max(1, self.sum_values[k][1]))
                 sys.stdout.write(info + "\n")
 
     def add(self, n, values=[]):
-        self.update(self.seen_so_far+n, values)
-
-
+        self.update(self.seen_so_far + n, values)

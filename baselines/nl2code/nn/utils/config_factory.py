@@ -18,11 +18,11 @@ class config(object):
         config._config[key] = val
 
     @staticmethod
-    def init_config(file='config.py'):
+    def init_config(file="config.py"):
         if len(config._config) > 0:
             return
 
-        logging.info('use configuration: %s', file)
+        logging.info("use configuration: %s", file)
         data = {}
         execfile(file, data)
-        config._config = data['config']
+        config._config = data["config"]

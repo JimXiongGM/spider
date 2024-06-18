@@ -1,21 +1,19 @@
 # -*- coding: UTF-8 -*-
 from __future__ import division
-import string
-from collections import OrderedDict
-from collections import defaultdict
-from itertools import count
 
-from nn.utils.io_utils import serialize_to_file, deserialize_from_file
-
-from lang.ifttt.grammar import IFTTTGrammar
-from parse import ifttt_ast_to_parse_tree
-from lang.grammar import Grammar
 import logging
-from itertools import chain
+import string
+from collections import OrderedDict, defaultdict
+from itertools import chain, count
 
+from dataset import (APPLY_RULE, COPY_TOKEN, GEN_COPY_TOKEN, GEN_TOKEN, Action,
+                     DataEntry, DataSet, gen_vocab)
+from lang.grammar import Grammar
+from lang.ifttt.grammar import IFTTTGrammar
 from nn.utils.generic_utils import init_logging
+from nn.utils.io_utils import deserialize_from_file, serialize_to_file
+from parse import ifttt_ast_to_parse_tree
 
-from dataset import gen_vocab, DataSet, DataEntry, Action, APPLY_RULE, GEN_TOKEN, COPY_TOKEN, GEN_COPY_TOKEN
 
 def load_examples(data_file):
     f = open(data_file)

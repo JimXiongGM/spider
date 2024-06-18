@@ -7,6 +7,7 @@ def softmax(x):
 
 def time_distributed_softmax(x):
     import warnings
+
     warnings.warn("time_distributed_softmax is deprecated. Just use softmax!", DeprecationWarning)
     return softmax(x)
 
@@ -32,12 +33,14 @@ def hard_sigmoid(x):
 
 
 def linear(x):
-    '''
+    """
     The function returns the variable that is passed in, so all types work
-    '''
+    """
     return x
 
 
 from .utils.generic_utils import get_from_module
+
+
 def get(identifier):
-    return get_from_module(identifier, globals(), 'activation function')
+    return get_from_module(identifier, globals(), "activation function")

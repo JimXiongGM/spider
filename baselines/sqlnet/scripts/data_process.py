@@ -1,8 +1,10 @@
-import re
 import io
 import json
-import numpy as np
 import os
+import re
+
+import numpy as np
+
 
 def load_data_new(sql_paths, table_paths, use_small=False):
     if not isinstance(sql_paths, list):

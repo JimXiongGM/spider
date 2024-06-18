@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import numpy as np
 import theano
 import theano.tensor as T
@@ -16,7 +17,7 @@ def shared_zeros(shape, dtype=theano.config.floatX, name=None):
     return sharedX(np.zeros(shape), dtype=dtype, name=name)
 
 
-def shared_scalar(val=0., dtype=theano.config.floatX, name=None):
+def shared_scalar(val=0.0, dtype=theano.config.floatX, name=None):
     return theano.shared(np.cast[dtype](val))
 
 
@@ -25,7 +26,7 @@ def shared_ones(shape, dtype=theano.config.floatX, name=None):
 
 
 def alloc_zeros_matrix(*dims):
-    return T.alloc(np.cast[theano.config.floatX](0.), *dims)
+    return T.alloc(np.cast[theano.config.floatX](0.0), *dims)
 
 
 def tensor_right_shift(tensor):

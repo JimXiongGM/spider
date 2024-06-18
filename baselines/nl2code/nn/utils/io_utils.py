@@ -1,12 +1,13 @@
 from __future__ import absolute_import
 
+from collections import defaultdict
+
 import cPickle
 import h5py
 import numpy as np
-from collections import defaultdict
 
 
-class HDF5Matrix():
+class HDF5Matrix:
     refs = defaultdict(int)
 
     def __init__(self, datapath, dataset, start, end, normalizer=None):
@@ -26,12 +27,12 @@ class HDF5Matrix():
     def __getitem__(self, key):
         if isinstance(key, slice):
             if key.stop + self.start <= self.end:
-                idx = slice(key.start+self.start, key.stop + self.start)
+                idx = slice(key.start + self.start, key.stop + self.start)
             else:
                 raise IndexError
         elif isinstance(key, int):
             if key + self.start < self.end:
-                idx = key+self.start
+                idx = key + self.start
             else:
                 raise IndexError
         elif isinstance(key, np.ndarray):
@@ -56,15 +57,17 @@ class HDF5Matrix():
 
 def save_array(array, name):
     import tables
-    f = tables.open_file(name, 'w')
+
+    f = tables.open_file(name, "w")
     atom = tables.Atom.from_dtype(array.dtype)
-    ds = f.createCArray(f.root, 'data', atom, array.shape)
+    ds = f.createCArray(f.root, "data", atom, array.shape)
     ds[:] = array
     f.close()
 
 
 def load_array(name):
     import tables
+
     f = tables.open_file(name)
     array = f.root.data
     a = np.empty(shape=array.shape, dtype=array.dtype)
@@ -74,13 +77,13 @@ def load_array(name):
 
 
 def serialize_to_file(obj, path, protocol=cPickle.HIGHEST_PROTOCOL):
-    f = open(path, 'wb')
+    f = open(path, "wb")
     cPickle.dump(obj, f, protocol=protocol)
     f.close()
 
 
 def deserialize_from_file(path):
-    f = open(path, 'rb')
+    f = open(path, "rb")
     obj = cPickle.load(f)
     f.close()
     return obj

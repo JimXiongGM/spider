@@ -1,20 +1,20 @@
 from __future__ import absolute_import
+
 import numpy as np
 import scipy as sp
-from six.moves import range
-from six.moves import zip
+from six.moves import range, zip
 
 
 def to_categorical(y, nb_classes=None):
-    '''Convert class vector (integers from 0 to nb_classes)
+    """Convert class vector (integers from 0 to nb_classes)
     to binary class matrix, for use with categorical_crossentropy
-    '''
-    y = np.asarray(y, dtype='int32')
+    """
+    y = np.asarray(y, dtype="int32")
     if not nb_classes:
-        nb_classes = np.max(y)+1
+        nb_classes = np.max(y) + 1
     Y = np.zeros((len(y), nb_classes))
     for i in range(len(y)):
-        Y[i, y[i]] = 1.
+        Y[i, y[i]] = 1.0
     return Y
 
 
@@ -27,16 +27,16 @@ def normalize(a, axis=-1, order=2):
 def binary_logloss(p, y):
     epsilon = 1e-15
     p = sp.maximum(epsilon, p)
-    p = sp.minimum(1-epsilon, p)
+    p = sp.minimum(1 - epsilon, p)
     res = sum(y * sp.log(p) + sp.subtract(1, y) * sp.log(sp.subtract(1, p)))
-    res *= -1.0/len(y)
+    res *= -1.0 / len(y)
     return res
 
 
 def multiclass_logloss(P, Y):
-    score = 0.
-    npreds = [P[i][Y[i]-1] for i in range(len(Y))]
-    score = -(1. / len(Y)) * np.sum(np.log(npreds))
+    score = 0.0
+    npreds = [P[i][Y[i] - 1] for i in range(len(Y))]
+    score = -(1.0 / len(Y)) * np.sum(np.log(npreds))
     return score
 
 

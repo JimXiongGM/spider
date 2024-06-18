@@ -1,13 +1,16 @@
-import argparse, sys
-from nn.utils.generic_utils import init_logging
-from nn.utils.io_utils import deserialize_from_file, serialize_to_file
-from evaluation import *
-from dataset import canonicalize_query, query_to_data
+import argparse
+import sys
 from collections import namedtuple
+
+import config
+from dataset import (Action, DataEntry, DataSet, Vocab, canonicalize_query,
+                     query_to_data)
 from lang.py.parse import decode_tree_to_python_ast
 from model import Model
-from dataset import DataEntry, DataSet, Vocab, Action
-import config
+from nn.utils.generic_utils import init_logging
+from nn.utils.io_utils import deserialize_from_file, serialize_to_file
+
+from evaluation import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-data_type', default='django', choices=['django', 'hs'])

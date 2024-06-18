@@ -1,7 +1,8 @@
-from nltk import word_tokenize
 import json
-import re
 import logging
+import re
+
+from nltk import word_tokenize
 
 infiles_data_final = {'train': '../datasets/data_final/train.json',   
                 'dev':'../datasets/data_final/dev.json',

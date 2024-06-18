@@ -12,9 +12,10 @@ experiment and run quick_eval on the results.
 import argparse
 import os
 import sys
+from collections import Counter
+
 import yaml
 
-from collections import Counter
 
 # todo: set the maximum length, see the generate_vocab.py
 def ensure_in_spec(spec, key):

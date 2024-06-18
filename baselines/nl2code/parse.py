@@ -1,19 +1,17 @@
 import ast
+import inspect
 import re
-import sys, inspect
-from StringIO import StringIO
-
-import astor
+import sys
+import token as tk
 from collections import OrderedDict
 from tokenize import generate_tokens, tokenize
-import token as tk
 
-from nn.utils.io_utils import deserialize_from_file, serialize_to_file
-
+import astor
 from astnode import *
+from nn.utils.io_utils import deserialize_from_file, serialize_to_file
+from StringIO import StringIO
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     #     node = ast.parse('''
     # # for i in range(1, 100):
     # #  sum = sum + i
@@ -39,7 +37,8 @@ if __name__ == '__main__':
     # import astor
     # print astor.to_source(ast_tree)
 
-    from dataset import DataSet, Vocab, DataEntry, Action
+    from dataset import Action, DataEntry, DataSet, Vocab
+
     # train_data, dev_data, test_data = deserialize_from_file('django.cleaned.dataset.bin')
     # cand_list = deserialize_from_file('cand_hyps.18771.bin')
     # hyp_tree = cand_list[3].tree

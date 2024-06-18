@@ -1,11 +1,11 @@
-import json
-import torch
-import datetime
 import argparse
-import numpy as np
-from scripts.utils import *
-from scripts.model.typesql import TypeSQL
+import datetime
+import json
 
+import numpy as np
+import torch
+from scripts.model.typesql import TypeSQL
+from scripts.utils import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

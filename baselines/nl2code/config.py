@@ -40,4 +40,3 @@
 # DECODE_MAX_TIME_STEP = 100
 
 config_info = None
-

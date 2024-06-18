@@ -1,5 +1,6 @@
 from astnode import ASTNode
 
+
 def ifttt_ast_to_parse_tree_helper(s, offset):
     """
     adapted from ifttt codebase

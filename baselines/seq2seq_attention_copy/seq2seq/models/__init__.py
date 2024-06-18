@@ -14,11 +14,15 @@
 """This module contains various Encoder-Decoder models
 """
 
-from seq2seq.models.basic_seq2seq import BasicSeq2Seq
-from seq2seq.models.attention_seq2seq import AttentionSeq2Seq
-from seq2seq.models.attention_copying_seq2seq import BaseAttentionCopyingSeq2Seq, SchemaAttentionCopyingSeq2Seq, InputAttentionCopyingSeq2Seq, SchemaAndInputAttentionCopyingSeq2Seq
-from seq2seq.models.schema_attention_seq2seq import SchemaAttentionSeq2Seq, SchemaMapAttentionSeq2Seq
-from seq2seq.models.image2seq import Image2Seq
-
 import seq2seq.models.bridges
 import seq2seq.models.model_base
+from seq2seq.models.attention_copying_seq2seq import (
+    BaseAttentionCopyingSeq2Seq,
+    InputAttentionCopyingSeq2Seq,
+    SchemaAndInputAttentionCopyingSeq2Seq,
+    SchemaAttentionCopyingSeq2Seq,
+)
+from seq2seq.models.attention_seq2seq import AttentionSeq2Seq
+from seq2seq.models.basic_seq2seq import BasicSeq2Seq
+from seq2seq.models.image2seq import Image2Seq
+from seq2seq.models.schema_attention_seq2seq import SchemaAttentionSeq2Seq, SchemaMapAttentionSeq2Seq

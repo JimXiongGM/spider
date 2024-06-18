@@ -2,13 +2,14 @@ import ast
 import logging
 import re
 import token as tk
-from cStringIO import StringIO
 from tokenize import generate_tokens
 
 from astnode import ASTNode
-from lang.sql.grammar import is_compositional_leaf, PY_AST_NODE_FIELDS, NODE_FIELD_BLACK_LIST, SQLGrammar,TERMINAL_AST_TYPES
-from lang.util import escape
-from lang.util import typename
+from cStringIO import StringIO
+from lang.sql.grammar import (NODE_FIELD_BLACK_LIST, PY_AST_NODE_FIELDS,
+                              TERMINAL_AST_TYPES, SQLGrammar,
+                              is_compositional_leaf)
+from lang.util import escape, typename
 
 
 def sql_ast_to_parse_tree(node):

@@ -1,15 +1,15 @@
 # -*- coding: UTF-8 -*-
 
 from __future__ import division
-import os
-from nltk.translate.bleu_score import sentence_bleu, corpus_bleu, SmoothingFunction
+
 import logging
+import os
 import traceback
 
-from nn.utils.generic_utils import init_logging
-
 from model import *
-
+from nltk.translate.bleu_score import (SmoothingFunction, corpus_bleu,
+                                       sentence_bleu)
+from nn.utils.generic_utils import init_logging
 
 DJANGO_ANNOT_FILE = '/Users/yinpengcheng/Research/SemanticParsing/CodeGeneration/en-django/all.anno'
 
@@ -60,9 +60,10 @@ def evaluate(model, dataset, verbose=True):
 
 
 def evaluate_decode_results(dataset, decode_results, verbose=True):
-    from lang.py.parse import tokenize_code, de_canonicalize_code
     # tokenize_code = tokenize_for_bleu_eval
     import ast
+
+    from lang.py.parse import de_canonicalize_code, tokenize_code
     assert dataset.count == len(decode_results)
 
     f = f_decode = None
@@ -264,9 +265,10 @@ def evaluate_decode_results(dataset, decode_results, verbose=True):
 
 
 def analyze_decode_results(dataset, decode_results, verbose=True):
-    from lang.py.parse import tokenize_code, de_canonicalize_code
     # tokenize_code = tokenize_for_bleu_eval
     import ast
+
+    from lang.py.parse import de_canonicalize_code, tokenize_code
     assert dataset.count == len(decode_results)
 
     f = f_decode = None
@@ -608,11 +610,14 @@ def evaluate_seq2seq_decode_results(dataset, seq2seq_decode_file, seq2seq_ref_fi
 
 
 def evaluate_seq2tree_sample_file(sample_file, id_file, dataset):
-    from lang.py.parse import tokenize_code, de_canonicalize_code
-    import ast, astor
+    import ast
     import traceback
-    from lang.py.seq2tree_exp import seq2tree_repr_to_ast_tree, merge_broken_value_nodes
-    from lang.py.parse import decode_tree_to_python_ast
+
+    import astor
+    from lang.py.parse import (de_canonicalize_code, decode_tree_to_python_ast,
+                               tokenize_code)
+    from lang.py.seq2tree_exp import (merge_broken_value_nodes,
+                                      seq2tree_repr_to_ast_tree)
 
     f_sample = open(sample_file)
     line_id_to_raw_id = OrderedDict()
@@ -857,7 +862,7 @@ def decode_and_evaluate_ifttt_by_split(model, test_data):
 
 
 if __name__ == '__main__':
-    from dataset import DataEntry, DataSet, Vocab, Action
+    from dataset import Action, DataEntry, DataSet, Vocab
     init_logging('parser.log', logging.INFO)
 
     train_data, dev_data, test_data = deserialize_from_file('data/ifttt.freq3.bin')

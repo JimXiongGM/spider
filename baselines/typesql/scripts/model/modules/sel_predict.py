@@ -1,10 +1,11 @@
 import json
-import torch
+
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from net_utils import col_name_encode, run_lstm
 from torch.autograd import Variable
-from net_utils import run_lstm, col_name_encode
 
 
 class SelPredictor(nn.Module):
@@ -13,17 +14,27 @@ class SelPredictor(nn.Module):
         self.N_h = N_h
         self.gpu = gpu
 
-        self.q_lstm = nn.LSTM(input_size=N_word+N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.q_lstm = nn.LSTM(
+            input_size=N_word + N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
-        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.col_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
         self.q_num_att = nn.Linear(N_h, N_h)
         self.col_num_out_q = nn.Linear(N_h, N_h)
-        self.col_num_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 5)) # num of cols: 1-4
+        self.col_num_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 5))  # num of cols: 1-4
 
         self.q_att = nn.Linear(N_h, N_h)
         self.col_out_q = nn.Linear(N_h, N_h)
@@ -38,9 +49,9 @@ class SelPredictor(nn.Module):
         self.agg_att = nn.Linear(N_h, N_h)
         self.agg_out_q = nn.Linear(N_h, N_h)
         self.agg_out_c = nn.Linear(N_h, N_h)
-        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6)) #to 5
+        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6))  # to 5
 
-        self.softmax = nn.Softmax() #dim=1
+        self.softmax = nn.Softmax()  # dim=1
         self.CE = nn.CrossEntropyLoss()
         self.log_softmax = nn.LogSoftmax()
         self.mlsml = nn.MultiLabelSoftMarginLoss()
@@ -93,8 +104,9 @@ class SelPredictor(nn.Module):
         if gt_sel is None:
             sel_nums = [x + 1 for x in list(np.argmax(col_num_score.data.cpu().numpy(), axis=1))]
             sel_col_scores = col_score.data.cpu().numpy()
-            chosen_sel_gt = [list(np.argsort(-sel_col_scores[b])[:sel_nums[b]])
-                    for b in range(len(sel_nums))]
+            chosen_sel_gt = [
+                list(np.argsort(-sel_col_scores[b])[: sel_nums[b]]) for b in range(len(sel_nums))
+            ]
         else:
             for x in gt_sel:
                 curr = x[0]
@@ -106,36 +118,35 @@ class SelPredictor(nn.Module):
 
         col_emb = []
         for b in range(B):
-            cur_col_emb = torch.stack([col_enc[b, x]
-                for x in chosen_sel_gt[b]] + [col_enc[b, 0]] * (5 - len(chosen_sel_gt[b])))
+            cur_col_emb = torch.stack(
+                [col_enc[b, x] for x in chosen_sel_gt[b]] + [col_enc[b, 0]] * (5 - len(chosen_sel_gt[b]))
+            )
             col_emb.append(cur_col_emb)
-        col_emb = torch.stack(col_emb) # (B, 4, hd)
+        col_emb = torch.stack(col_emb)  # (B, 4, hd)
 
         # Predict aggregation
         # q_enc.unsqueeze(1): (B, 1, max_x_len, hd)
         # col_emb.unsqueeze(3): (B, 4, hd, 1)
         # agg_num_att_val.squeeze: (B, 4, max_x_len)
-        agg_num_att_val = torch.matmul(self.agg_num_att(q_enc).unsqueeze(1),
-                col_emb.unsqueeze(3)).squeeze()
+        agg_num_att_val = torch.matmul(self.agg_num_att(q_enc).unsqueeze(1), col_emb.unsqueeze(3)).squeeze()
         for idx, num in enumerate(q_len):
             if num < max_q_len:
                 agg_num_att_val[idx, :, num:] = -100
         agg_num_att = self.softmax(agg_num_att_val.view(-1, max_q_len)).view(B, -1, max_q_len)
         q_weighted_agg_num = (q_enc.unsqueeze(1) * agg_num_att.unsqueeze(3)).sum(2)
         # (B, 4, 4)
-        agg_num_score = self.agg_num_out(self.agg_num_out_q(q_weighted_agg_num) +
-                self.agg_num_out_c(col_emb)).squeeze()
+        agg_num_score = self.agg_num_out(
+            self.agg_num_out_q(q_weighted_agg_num) + self.agg_num_out_c(col_emb)
+        ).squeeze()
 
-        agg_att_val = torch.matmul(self.agg_att(q_enc).unsqueeze(1),
-                col_emb.unsqueeze(3)).squeeze()
+        agg_att_val = torch.matmul(self.agg_att(q_enc).unsqueeze(1), col_emb.unsqueeze(3)).squeeze()
         for idx, num in enumerate(q_len):
             if num < max_q_len:
                 agg_att_val[idx, :, num:] = -100
         agg_att = self.softmax(agg_att_val.view(-1, max_q_len)).view(B, -1, max_q_len)
         q_weighted_agg = (q_enc.unsqueeze(1) * agg_att.unsqueeze(3)).sum(2)
 
-        agg_score = self.agg_out(self.agg_out_q(q_weighted_agg) +
-                            self.agg_out_c(col_emb)).squeeze()
+        agg_score = self.agg_out(self.agg_out_q(q_weighted_agg) + self.agg_out_c(col_emb)).squeeze()
 
         score = (col_num_score, col_score, agg_num_score, agg_score)
 

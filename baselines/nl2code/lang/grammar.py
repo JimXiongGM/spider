@@ -1,8 +1,9 @@
-from collections import OrderedDict, defaultdict
 import logging
+from collections import OrderedDict, defaultdict
 
 from astnode import ASTNode
 from lang.util import typename
+
 
 class Grammar(object):
     def __init__(self, rules):
@@ -43,10 +44,10 @@ class Grammar(object):
 
         self.id_to_rule = OrderedDict((v, k) for (k, v) in self.rule_to_id.iteritems())
 
-        logging.info('num. rules: %d', len(self.rules))
-        logging.info('num. types: %d', len(self.node_type_to_id))
-        logging.info('root: %s', self.root_node)
-        logging.info('terminals: %s', ', '.join(repr(n) for n in self.terminal_nodes))
+        logging.info("num. rules: %d", len(self.rules))
+        logging.info("num. types: %d", len(self.node_type_to_id))
+        logging.info("root: %s", self.root_node)
+        logging.info("terminals: %s", ", ".join(repr(n) for n in self.terminal_nodes))
 
     def __iter__(self):
         return self.rules.__iter__()
@@ -59,7 +60,7 @@ class Grammar(object):
         if key_node in self.rule_index:
             return self.rule_index[key_node]
         else:
-            KeyError('key=%s' % key_node)
+            KeyError("key=%s" % key_node)
 
     def get_node_type_id(self, node):
         from astnode import ASTNode

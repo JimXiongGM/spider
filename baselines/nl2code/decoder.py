@@ -1,7 +1,9 @@
-import traceback
-import config
 import json
+import traceback
+
+import config
 from model import *
+
 
 def decode_sql_dataset(model, dataset, output_path,verbose=True):
     from lang.sql.parse import decode_tree_to_sql_ast

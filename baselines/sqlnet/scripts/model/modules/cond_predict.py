@@ -1,10 +1,11 @@
 import json
-import torch
+
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from net_utils import col_name_encode, run_lstm
 from torch.autograd import Variable
-from net_utils import run_lstm, col_name_encode
 
 
 class CondPredictor(nn.Module):
@@ -13,17 +14,27 @@ class CondPredictor(nn.Module):
         self.N_h = N_h
         self.gpu = gpu
 
-        self.q_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.q_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
-        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.col_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
         self.q_num_att = nn.Linear(N_h, N_h)
         self.col_num_out_q = nn.Linear(N_h, N_h)
-        self.col_num_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6)) # num of cols: 0-4
+        self.col_num_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6))  # num of cols: 0-4
 
         self.q_att = nn.Linear(N_h, N_h)
         self.col_out_q = nn.Linear(N_h, N_h)
@@ -33,9 +44,9 @@ class CondPredictor(nn.Module):
         self.op_att = nn.Linear(N_h, N_h)
         self.op_out_q = nn.Linear(N_h, N_h)
         self.op_out_c = nn.Linear(N_h, N_h)
-        self.op_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 12)) #to 5
+        self.op_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 12))  # to 5
 
-        self.softmax = nn.Softmax() #dim=1
+        self.softmax = nn.Softmax()  # dim=1
         self.CE = nn.CrossEntropyLoss()
         self.log_softmax = nn.LogSoftmax()
         self.mlsml = nn.MultiLabelSoftMarginLoss()
@@ -86,28 +97,27 @@ class CondPredictor(nn.Module):
         if gt_cond is None:
             cond_nums = np.argmax(col_num_score.data.cpu().numpy(), axis=1)
             col_scores = col_score.data.cpu().numpy()
-            chosen_col_gt = [list(np.argsort(-col_scores[b])[:cond_nums[b]]) for b in range(len(cond_nums))]
+            chosen_col_gt = [list(np.argsort(-col_scores[b])[: cond_nums[b]]) for b in range(len(cond_nums))]
         else:
             chosen_col_gt = [[x[0] for x in one_gt_cond] for one_gt_cond in gt_cond]
 
         col_emb = []
         for b in range(B):
-            cur_col_emb = torch.stack([col_enc[b, x]
-                for x in chosen_col_gt[b]] + [col_enc[b, 0]] * (5 - len(chosen_col_gt[b])))
+            cur_col_emb = torch.stack(
+                [col_enc[b, x] for x in chosen_col_gt[b]] + [col_enc[b, 0]] * (5 - len(chosen_col_gt[b]))
+            )
             col_emb.append(cur_col_emb)
         col_emb = torch.stack(col_emb)
 
         # Predict op
-        op_att_val = torch.matmul(self.op_att(q_enc).unsqueeze(1),
-                col_emb.unsqueeze(3)).squeeze()
+        op_att_val = torch.matmul(self.op_att(q_enc).unsqueeze(1), col_emb.unsqueeze(3)).squeeze()
         for idx, num in enumerate(q_len):
             if num < max_q_len:
                 op_att_val[idx, :, num:] = -100
         op_att = self.softmax(op_att_val.view(-1, max_q_len)).view(B, -1, max_q_len)
         q_weighted_op = (q_enc.unsqueeze(1) * op_att.unsqueeze(3)).sum(2)
 
-        op_score = self.op_out(self.op_out_q(q_weighted_op) +
-                            self.op_out_c(col_emb)).squeeze()
+        op_score = self.op_out(self.op_out_q(q_weighted_op) + self.op_out_c(col_emb)).squeeze()
 
         score = (col_num_score, col_score, op_score)
 

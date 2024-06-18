@@ -15,86 +15,82 @@
 individual tokens and the length.
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import tensorflow as tf
 from tensorflow.contrib.slim.python.slim.data import data_decoder
 
 
 class SplitMaskDecoder(data_decoder.DataDecoder):
-  """A DataProvider that splits a string tensor into individual tokens and
-  returns the tokens and the length.
-  Optionally prepends or appends special tokens.
+    """A DataProvider that splits a string tensor into individual tokens and
+    returns the tokens and the length.
+    Optionally prepends or appends special tokens.
 
-  Args:
-    delimiter: Delimiter to split on. Must be a single character.
-    tokens_feature_name: A descriptive feature name for the token values
-    length_feature_name: A descriptive feature name for the length value
-  """
+    Args:
+      delimiter: Delimiter to split on. Must be a single character.
+      tokens_feature_name: A descriptive feature name for the token values
+      length_feature_name: A descriptive feature name for the length value
+    """
 
-  def __init__(self,
-               delimiter=" ",
-               decoder_mask_feature_name="decoder_mask"
-               ):
-    self.delimiter = delimiter
-    self.decoder_mask_feature_name = decoder_mask_feature_name
+    def __init__(self, delimiter=" ", decoder_mask_feature_name="decoder_mask"):
+        self.delimiter = delimiter
+        self.decoder_mask_feature_name = decoder_mask_feature_name
 
-  def decode(self, data, items):
-    decoded_items = {}
-    # Split tokens
-    tokens = tf.string_split([data], delimiter=self.delimiter).values
+    def decode(self, data, items):
+        decoded_items = {}
+        # Split tokens
+        tokens = tf.string_split([data], delimiter=self.delimiter).values
 
-    decoder_mask = tf.string_to_number(tokens)
-    
-    decoded_items[self.decoder_mask_feature_name] = decoder_mask
-    return [decoded_items[_] for _ in items]
+        decoder_mask = tf.string_to_number(tokens)
 
-  def list_items(self):
-    return [self.decoder_mask_feature_name]
+        decoded_items[self.decoder_mask_feature_name] = decoder_mask
+        return [decoded_items[_] for _ in items]
+
+    def list_items(self):
+        return [self.decoder_mask_feature_name]
 
 
 class SplitTokensDecoder(data_decoder.DataDecoder):
-  """A DataProvider that splits a string tensor into individual tokens and
-  returns the tokens and the length.
-  Optionally prepends or appends special tokens.
+    """A DataProvider that splits a string tensor into individual tokens and
+    returns the tokens and the length.
+    Optionally prepends or appends special tokens.
 
-  Args:
-    delimiter: Delimiter to split on. Must be a single character.
-    tokens_feature_name: A descriptive feature name for the token values
-    length_feature_name: A descriptive feature name for the length value
-  """
+    Args:
+      delimiter: Delimiter to split on. Must be a single character.
+      tokens_feature_name: A descriptive feature name for the token values
+      length_feature_name: A descriptive feature name for the length value
+    """
 
-  def __init__(self,
-               delimiter=" ",
-               tokens_feature_name="tokens",
-               length_feature_name="length",
-               prepend_token=None,
-               append_token=None):
-    self.delimiter = delimiter
-    self.tokens_feature_name = tokens_feature_name
-    self.length_feature_name = length_feature_name
-    self.prepend_token = prepend_token
-    self.append_token = append_token
+    def __init__(
+        self,
+        delimiter=" ",
+        tokens_feature_name="tokens",
+        length_feature_name="length",
+        prepend_token=None,
+        append_token=None,
+    ):
+        self.delimiter = delimiter
+        self.tokens_feature_name = tokens_feature_name
+        self.length_feature_name = length_feature_name
+        self.prepend_token = prepend_token
+        self.append_token = append_token
 
-  def decode(self, data, items):
-    decoded_items = {}
-    # Split tokens
-    tokens = tf.string_split([data], delimiter=self.delimiter).values
+    def decode(self, data, items):
+        decoded_items = {}
+        # Split tokens
+        tokens = tf.string_split([data], delimiter=self.delimiter).values
 
-    # Optionally prepend a special token
-    if self.prepend_token is not None:
-      tokens = tf.concat([[self.prepend_token], tokens], 0)
+        # Optionally prepend a special token
+        if self.prepend_token is not None:
+            tokens = tf.concat([[self.prepend_token], tokens], 0)
 
-    # Optionally append a special token
-    if self.append_token is not None:
-      tokens = tf.concat([tokens, [self.append_token]], 0)
+        # Optionally append a special token
+        if self.append_token is not None:
+            tokens = tf.concat([tokens, [self.append_token]], 0)
 
-    decoded_items[self.length_feature_name] = tf.size(tokens)
-    decoded_items[self.tokens_feature_name] = tokens
-    return [decoded_items[_] for _ in items]
+        decoded_items[self.length_feature_name] = tf.size(tokens)
+        decoded_items[self.tokens_feature_name] = tokens
+        return [decoded_items[_] for _ in items]
 
-  def list_items(self):
-    return [self.tokens_feature_name, self.length_feature_name]
+    def list_items(self):
+        return [self.tokens_feature_name, self.length_feature_name]

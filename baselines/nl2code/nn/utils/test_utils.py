@@ -1,15 +1,16 @@
 import numpy as np
 
 
-def get_test_data(nb_train=1000, nb_test=500, input_shape=(10,), output_shape=(2,),
-                  classification=True, nb_class=2):
-    '''
-        classification=True overrides output_shape
-        (i.e. output_shape is set to (1,)) and the output
-        consists in integers in [0, nb_class-1].
+def get_test_data(
+    nb_train=1000, nb_test=500, input_shape=(10,), output_shape=(2,), classification=True, nb_class=2
+):
+    """
+    classification=True overrides output_shape
+    (i.e. output_shape is set to (1,)) and the output
+    consists in integers in [0, nb_class-1].
 
-        Otherwise: float output with shape output_shape.
-    '''
+    Otherwise: float output with shape output_shape.
+    """
     nb_sample = nb_train + nb_test
     if classification:
         y = np.random.randint(0, nb_class, size=(nb_sample, 1))

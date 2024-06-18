@@ -5,12 +5,14 @@ Created on Jul 4, 2017
 @author: Bhanu
 
 '''
-import numpy as np
-from seq2seq.data import vocab
-from gensim.models.keyedvectors import KeyedVectors
 import json
 import os.path
+
+import numpy as np
+from gensim.models.keyedvectors import KeyedVectors
 from nltk import word_tokenize
+from seq2seq.data import vocab
+
 np.random.seed(12345)
 
 VALUE_NUM_SYMBOL = "{value}"

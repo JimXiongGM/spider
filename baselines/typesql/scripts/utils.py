@@ -1,8 +1,10 @@
-import re
 import io
 import json
-import numpy as np
 import os
+import re
+
+import numpy as np
+
 #from lib.dbengine import DBEngine
 
 def lower_keys(x):

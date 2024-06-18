@@ -21,12 +21,6 @@ from setuptools import setup
 setup(
     name="seq2seq",
     version="0.1",
-    install_requires=[
-        "numpy",
-        "matplotlib",
-        "pyyaml",
-        "pyrouge"
-    ],
-    extras_require={'tensorflow': ['tensorflow'],
-                    'tensorflow with gpu': ['tensorflow-gpu']},
+    install_requires=["numpy", "matplotlib", "pyyaml", "pyrouge"],
+    extras_require={"tensorflow": ["tensorflow"], "tensorflow with gpu": ["tensorflow-gpu"]},
 )

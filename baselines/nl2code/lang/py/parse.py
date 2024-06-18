@@ -2,13 +2,13 @@ import ast
 import logging
 import re
 import token as tk
-from cStringIO import StringIO
 from tokenize import generate_tokens
 
 from astnode import ASTNode
-from lang.py.grammar import is_compositional_leaf, PY_AST_NODE_FIELDS, NODE_FIELD_BLACK_LIST, PythonGrammar
-from lang.util import escape
-from lang.util import typename
+from cStringIO import StringIO
+from lang.py.grammar import (NODE_FIELD_BLACK_LIST, PY_AST_NODE_FIELDS,
+                             PythonGrammar, is_compositional_leaf)
+from lang.util import escape, typename
 
 
 def python_ast_to_parse_tree(node):

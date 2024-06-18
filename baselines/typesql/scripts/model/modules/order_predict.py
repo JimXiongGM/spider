@@ -1,10 +1,11 @@
 import json
-import torch
+
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from net_utils import col_name_encode, run_lstm
 from torch.autograd import Variable
-from net_utils import run_lstm, col_name_encode
 
 
 class OrderPredictor(nn.Module):
@@ -13,13 +14,23 @@ class OrderPredictor(nn.Module):
         self.N_h = N_h
         self.gpu = gpu
 
-        self.q_lstm = nn.LSTM(input_size=N_word+N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.q_lstm = nn.LSTM(
+            input_size=N_word + N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
-        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.col_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
         self.gby_num_h = nn.Linear(N_h, N_h)
         self.gby_num_l = nn.Linear(N_h, N_h)
@@ -33,14 +44,14 @@ class OrderPredictor(nn.Module):
         self.agg_att = nn.Linear(N_h, N_h)
         self.agg_out_q = nn.Linear(N_h, N_h)
         self.agg_out_c = nn.Linear(N_h, N_h)
-        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6)) #to 5
+        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6))  # to 5
 
         self.dat_att = nn.Linear(N_h, N_h)
         self.dat_out_q = nn.Linear(N_h, N_h)
         self.dat_out_c = nn.Linear(N_h, N_h)
-        self.dat_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 5)) #for 4 desc/asc limit/none combinations
+        self.dat_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 5))  # for 4 desc/asc limit/none combinations
 
-        self.softmax = nn.Softmax() #dim=1
+        self.softmax = nn.Softmax()  # dim=1
         self.CE = nn.CrossEntropyLoss()
         self.log_softmax = nn.LogSoftmax()
         self.mlsml = nn.MultiLabelSoftMarginLoss()
@@ -57,7 +68,6 @@ class OrderPredictor(nn.Module):
         x_emb_concat = torch.cat((q_emb_var, x_type_emb_var), 2)
         q_enc, _ = run_lstm(self.q_lstm, x_emb_concat, q_len)
         col_enc, _ = run_lstm(self.col_lstm, col_emb_var, col_len)
-
 
         # Predict number
         gby_num_att = torch.bmm(col_enc, self.gby_num_h(q_enc).transpose(1, 2))

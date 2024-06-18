@@ -3,22 +3,17 @@ Sequence to Sequence model with attention-based copying of input and schema.
 """
 
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 from pydoc import locate
 
-import tensorflow as tf
-from tensorflow.python.ops import math_ops
-
 import numpy as np
-
-from seq2seq import decoders
-from seq2seq.models.attention_seq2seq import AttentionSeq2Seq
+import tensorflow as tf
+from seq2seq import decoders, graph_utils
 from seq2seq import losses as seq2seq_losses
-from seq2seq import graph_utils
+from seq2seq.models.attention_seq2seq import AttentionSeq2Seq
+from tensorflow.python.ops import math_ops
 
 
 class SchemaAttentionCopyingSeq2Seq(BaseAttentionCopyingSeq2Seq):

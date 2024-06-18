@@ -21,14 +21,16 @@ Generate vocabulary for a tokenized text file.
 """
 
 
-import sys
 import argparse
 import collections
 import json
 import os
-from nltk.tokenize import word_tokenize
 import re
-from utils import output_vocab_to_txt, infiles, count_databases, strip_query, strip_nl
+import sys
+
+from nltk.tokenize import word_tokenize
+from utils import (count_databases, infiles, output_vocab_to_txt, strip_nl,
+                   strip_query)
 
 parser = argparse.ArgumentParser(
     description="Generate vocabulary for a tokenized text file.")

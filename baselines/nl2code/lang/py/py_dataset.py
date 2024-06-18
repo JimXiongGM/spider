@@ -1,19 +1,22 @@
 # -*- coding: UTF-8 -*-
 from __future__ import division
+
 import ast
-import astor
 import logging
-from itertools import chain
-import nltk
 import re
+from itertools import chain
 
-from nn.utils.io_utils import serialize_to_file, deserialize_from_file
+import astor
+import nltk
+from dataset import (APPLY_RULE, COPY_TOKEN, GEN_COPY_TOKEN, GEN_TOKEN, Action,
+                     DataEntry, DataSet, Vocab, gen_vocab)
+from lang.py.parse import (canonicalize_code, de_canonicalize_code,
+                           de_canonicalize_code_for_seq2seq, get_grammar,
+                           parse, parse_raw, parse_tree_to_python_ast,
+                           tokenize_code, tokenize_code_adv)
+from lang.py.unaryclosure import apply_unary_closures, get_top_unary_closures
 from nn.utils.generic_utils import init_logging
-
-from dataset import gen_vocab, DataSet, DataEntry, Action, APPLY_RULE, GEN_TOKEN, COPY_TOKEN, GEN_COPY_TOKEN, Vocab
-from lang.py.parse import parse, parse_tree_to_python_ast, canonicalize_code, get_grammar, parse_raw, \
-    de_canonicalize_code, tokenize_code, tokenize_code_adv, de_canonicalize_code_for_seq2seq
-from lang.py.unaryclosure import get_top_unary_closures, apply_unary_closures
+from nn.utils.io_utils import deserialize_from_file, serialize_to_file
 
 
 def extract_grammar(code_file, prefix='py'):

@@ -1,10 +1,11 @@
 import json
-import torch
+
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from net_utils import col_name_encode, run_lstm
 from torch.autograd import Variable
-from net_utils import run_lstm, col_name_encode
 
 
 class GroupPredictor(nn.Module):
@@ -13,13 +14,23 @@ class GroupPredictor(nn.Module):
         self.N_h = N_h
         self.gpu = gpu
 
-        self.q_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.q_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
-        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
-                num_layers=N_depth, batch_first=True,
-                dropout=0.3, bidirectional=True)
+        self.col_lstm = nn.LSTM(
+            input_size=N_word,
+            hidden_size=N_h / 2,
+            num_layers=N_depth,
+            batch_first=True,
+            dropout=0.3,
+            bidirectional=True,
+        )
 
         self.gby_num_h = nn.Linear(N_h, N_h)
         self.gby_num_l = nn.Linear(N_h, N_h)
@@ -33,7 +44,7 @@ class GroupPredictor(nn.Module):
         self.hv_att = nn.Linear(N_h, N_h)
         self.hv_out_q = nn.Linear(N_h, N_h)
         self.hv_out_c = nn.Linear(N_h, N_h)
-        self.hv_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 2)) #for having/none
+        self.hv_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 2))  # for having/none
 
         self.q_att = nn.Linear(N_h, N_h)
         self.col_out_q = nn.Linear(N_h, N_h)
@@ -43,14 +54,14 @@ class GroupPredictor(nn.Module):
         self.agg_att = nn.Linear(N_h, N_h)
         self.agg_out_q = nn.Linear(N_h, N_h)
         self.agg_out_c = nn.Linear(N_h, N_h)
-        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6)) #to 5
+        self.agg_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 6))  # to 5
 
         self.op_att = nn.Linear(N_h, N_h)
         self.op_out_q = nn.Linear(N_h, N_h)
         self.op_out_c = nn.Linear(N_h, N_h)
-        self.op_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 12)) #to 5
+        self.op_out = nn.Sequential(nn.Tanh(), nn.Linear(N_h, 12))  # to 5
 
-        self.softmax = nn.Softmax() #dim=1
+        self.softmax = nn.Softmax()  # dim=1
         self.CE = nn.CrossEntropyLoss()
         self.log_softmax = nn.LogSoftmax()
         self.mlsml = nn.MultiLabelSoftMarginLoss()
@@ -87,8 +98,7 @@ class GroupPredictor(nn.Module):
                 gby_att_val[idx, :, num:] = -100
         gby_att = self.softmax(gby_att_val.view((-1, max_q_len))).view(B, -1, max_q_len)
         K_gby_expand = (q_enc.unsqueeze(1) * gby_att.unsqueeze(3)).sum(2)
-        gby_score = self.gby_out(self.gby_out_K(K_gby_expand) + \
-                self.gby_out_col(col_enc)).squeeze()
+        gby_score = self.gby_out(self.gby_out_K(K_gby_expand) + self.gby_out_col(col_enc)).squeeze()
 
         for idx, num in enumerate(col_len):
             if num < max_col_len:
@@ -134,7 +144,6 @@ class GroupPredictor(nn.Module):
         q_weighted_agg = (q_enc.unsqueeze(1) * agg_att.unsqueeze(3)).sum(2).sum(1)
         # self.col_num_out: (B, 4)
         agg_score = self.agg_out(self.agg_out_q(q_weighted_agg))
-
 
         # Predict op
         op_att_val = torch.matmul(col_enc, self.agg_att(q_enc).transpose(1, 2))

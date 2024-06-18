@@ -1,17 +1,17 @@
 import json
-import torch
-import numpy as np
 import traceback
-import torch.nn as nn
 from collections import defaultdict
+
+import numpy as np
+import torch
+import torch.nn as nn
 import torch.nn.functional as F
-from torch.autograd import Variable
-from modules.word_embedding import WordEmbedding
-from modules.sel_predict import SelPredictor
 from modules.cond_predict import CondPredictor
 from modules.group_predict import GroupPredictor
 from modules.order_predict import OrderPredictor
-
+from modules.sel_predict import SelPredictor
+from modules.word_embedding import WordEmbedding
+from torch.autograd import Variable
 
 AGG_OPS = ['none', 'max', 'min', 'count', 'sum', 'avg']
 WHERE_OPS = ['not', 'between', '=', '>', '<', '>=', '<=', '!=', 'in', 'like', 'is', 'exists']

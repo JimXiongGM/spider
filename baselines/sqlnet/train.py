@@ -1,10 +1,11 @@
-import json
-import torch
-import datetime
 import argparse
+import datetime
+import json
+
 import numpy as np
-from scripts.utils import *
+import torch
 from scripts.model.sqlnet import SQLNet
+from scripts.utils import *
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

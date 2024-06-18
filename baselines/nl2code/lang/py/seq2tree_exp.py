@@ -1,16 +1,15 @@
 import logging
 import re
-from collections import defaultdict, OrderedDict
+import sys
+from collections import OrderedDict, defaultdict
 from itertools import chain
 
-import sys
-
 from astnode import ASTNode
-from dataset import preprocess_dataset, gen_vocab
+from dataset import gen_vocab, preprocess_dataset
 from lang.py.grammar import type_str_to_type
-from lang.py.parse import parse, get_grammar, decode_tree_to_python_ast
-from lang.py.unaryclosure import get_top_unary_closures, apply_unary_closures
-from lang.util import typename, escape, unescape
+from lang.py.parse import decode_tree_to_python_ast, get_grammar, parse
+from lang.py.unaryclosure import apply_unary_closures, get_top_unary_closures
+from lang.util import escape, typename, unescape
 from nn.utils.generic_utils import init_logging
 from nn.utils.io_utils import serialize_to_file
 

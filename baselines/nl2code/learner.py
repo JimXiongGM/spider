@@ -1,15 +1,16 @@
+import logging
+import os
+import sys
+import time
+
+import config
+import decoder
+import numpy as np
+from dataset import *
 from nn.utils.config_factory import config
 from nn.utils.generic_utils import *
 
-import logging
-import numpy as np
-import sys, os
-import time
-
-import decoder
 import evaluation
-from dataset import *
-import config
 
 
 class Learner(object):

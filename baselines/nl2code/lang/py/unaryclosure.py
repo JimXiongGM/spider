@@ -1,10 +1,11 @@
 # -*- coding: UTF-8 -*-
 
-from astnode import ASTNode
-from lang.sql.grammar import type_str_to_type
-from lang.py.parse import parse
-from collections import Counter
 import re
+from collections import Counter
+
+from astnode import ASTNode
+from lang.py.parse import parse
+from lang.sql.grammar import type_str_to_type
 
 
 def extract_unary_closure_helper(parse_tree, unary_link, last_node):
