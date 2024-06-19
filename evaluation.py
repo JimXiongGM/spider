@@ -19,14 +19,10 @@
 # }
 ################################
 
-from __future__ import print_function
 
-import argparse
 import json
 import os
 import sqlite3
-import sys
-import traceback
 
 from process_sql import Schema, get_schema, get_sql, get_tables_with_alias, tokenize
 
@@ -369,6 +365,9 @@ class Evaluator:
         self.partial_scores = None
 
     def eval_hardness(self, sql):
+        """
+        判断难易程度
+        """
         count_comp1_ = count_component1(sql)
         count_comp2_ = count_component2(sql)
         count_others_ = count_others(sql)
@@ -595,6 +594,13 @@ def evaluate(gold, predict, db_dir, etype, kmaps):
         g_str, db = g
         db_name = db
         db = os.path.join(db_dir, db, db + ".sqlite")
+        """
+        print(schema._schema)
+        {'stadium': ['stadium_id', 'location', 'name', 'capacity', 'highest', 'lowest', 'average'], 'singer': ['singer_id', 'name', 'country', 'song_name', 'song_release_year', 'age', 'is_male'], 'concert': ['concert_id', 'concert_name', 'theme', 'stadium_id', 'year'], 'singer_in_concert': ['concert_id', 'singer_id']}
+        
+        print(schema._idMap)
+        {'*': '__all__', 'stadium.stadium_id': '__stadium.stadium_id__', 'stadium.location': '__stadium.location__', 'stadium.name': '__stadium.name__' ...
+        """
         schema = Schema(get_schema(db))
         g_sql = get_sql(schema, g_str)
         hardness = evaluator.eval_hardness(g_sql)
@@ -618,7 +624,7 @@ def evaluate(gold, predict, db_dir, etype, kmaps):
                 "where": [],
             }
             eval_err_num += 1
-            print("eval_err_num:{}".format(eval_err_num))
+            print("eval_err_num:{}, p_str: {}".format(eval_err_num, p_str))
 
         # rebuild sql for value evaluation
         kmap = kmaps[db_name]
@@ -638,10 +644,10 @@ def evaluate(gold, predict, db_dir, etype, kmaps):
         if etype in ["all", "match"]:
             exact_score = evaluator.eval_exact_match(p_sql, g_sql)
             partial_scores = evaluator.partial_scores
-            if exact_score == 0:
-                print("{} pred: {}".format(hardness, p_str))
-                print("{} gold: {}".format(hardness, g_str))
-                print("")
+            # if exact_score == 0:
+            #     print("{} pred: {}".format(hardness, p_str))
+            #     print("{} gold: {}".format(hardness, g_str))
+            #     print("")
             scores[hardness]["exact"] += exact_score
             scores["all"]["exact"] += exact_score
             for type_ in partial_types:
@@ -740,7 +746,9 @@ def eval_exec_match(db, p_str, g_str, pred, gold):
 
     p_val_units = [unit[1] for unit in pred["select"][1]]
     q_val_units = [unit[1] for unit in gold["select"][1]]
-    return res_map(p_res, p_val_units) == res_map(q_res, q_val_units)
+    _r1 = res_map(p_res, p_val_units)
+    _r2 = res_map(q_res, q_val_units)
+    return _r1 == _r2
 
 
 # Rebuild SQL functions for value evaluation
@@ -940,12 +948,19 @@ def build_foreign_key_map(entry):
         for idx in sorted_list:
             foreign_key_map[cols[idx]] = cols[midx]
 
+    """
+    e.g.
+    {'__domain.did__': '__domain.did__', '__domain_author.did__': '__domain.did__', '__domain_conference.did__': '__domain.did__', ...
+    指的是 Table `domain_author` column `did` FK constrain to Table `domain` column `did`; Table `domain_conference` column `did` FK constrain to Table `domain` column `did`
+    """
+
     return foreign_key_map
 
 
 def build_foreign_key_map_from_json(table):
     with open(table) as f:
         data = json.load(f)
+    data.sort(key=lambda x: x["db_id"])
     tables = {}
     for entry in data:
         tables[entry["db_id"]] = build_foreign_key_map(entry)
@@ -953,19 +968,27 @@ def build_foreign_key_map_from_json(table):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--gold", dest="gold", type=str)
-    parser.add_argument("--pred", dest="pred", type=str)
-    parser.add_argument("--db", dest="db", type=str)
-    parser.add_argument("--table", dest="table", type=str)
-    parser.add_argument("--etype", dest="etype", type=str)
-    args = parser.parse_args()
+    # python evaluation.py
 
-    gold = args.gold
-    pred = args.pred
-    db_dir = args.db
-    table = args.table
-    etype = args.etype
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("--gold", dest="gold", type=str)
+    # parser.add_argument("--pred", dest="pred", type=str)
+    # parser.add_argument("--db", dest="db", type=str)
+    # parser.add_argument("--table", dest="table", type=str)
+    # parser.add_argument("--etype", dest="etype", type=str)
+    # args = parser.parse_args()
+
+    # gold = args.gold
+    # pred = args.pred
+    # db_dir = args.db
+    # table = args.table
+    # etype = args.etype
+
+    gold = "evaluation_examples/gold_example.txt"
+    pred = "evaluation_examples/pred_example.txt"
+    db_dir = "data/database"
+    table = "data/tables.json"
+    etype = "all"
 
     assert etype in ["all", "exec", "match"], "Unknown evaluation method"
 

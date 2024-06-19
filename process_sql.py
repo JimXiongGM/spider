@@ -63,6 +63,9 @@ class Schema:
         return self._idMap
 
     def _map(self, schema):
+        """
+        k:v k和v居然是一样的？？
+        """
         idMap = {"*": "__all__"}
         id = 1
         for key, vals in schema.items():
